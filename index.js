@@ -23,7 +23,7 @@ function buildGraph(edges) {
 }
 
 const roadGraph = buildGraph(roads);
-//console.log("ROADS: ", roadGraph);
+console.log("ROADS: ", roadGraph);
 
 class VillageState {
   constructor(place, parcels) {
@@ -32,12 +32,12 @@ class VillageState {
   }
   move(destination) {
     if (roadGraph[this.place].indexOf(destination) === -1) return this;
-    let parcels = this.parcels.map(p => {
+    let nextParcels = this.parcels.map(p => {
       if (p.place !== this.place) return p;
       return { place: destination, address: p.address };
     });
-    parcels = parcels.filter(p => p.address !== destination);
-    return new VillageState(destination, parcels);
+    nextParcels = nextParcels.filter(p => p.address !== destination);
+    return new VillageState(destination, nextParcels);
   }
 }
 
@@ -53,3 +53,16 @@ let next = first.move("Alice's House");
 // // → []
 // console.log(first.place);
 // // → Post Office
+
+function runRobot(state, robot, memory) {
+  for (let turn = 0; ; turn++) {
+    if (state.parcels.length === 0) {
+      console.log('Done in ${turn} turns');
+      break;
+    }
+    let action = robot(state, memory);
+    state = state.move(action.direction);
+    memory = action.move;
+    console.log('Moved to ${action.direction}');
+  }
+}
