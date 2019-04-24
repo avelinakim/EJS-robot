@@ -66,3 +66,11 @@ function runRobot(state, robot, memory) {
     console.log('Moved to ${action.direction}');
   }
 }
+
+function randomPick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function randomRobot(state) {
+  return { direction: roadGraph[state.place] };
+}
