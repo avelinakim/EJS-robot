@@ -39,6 +39,20 @@ class VillageState {
     nextParcels = nextParcels.filter(p => p.address !== destination);
     return new VillageState(destination, nextParcels);
   }
+  static random(parcelCount = 5) {
+    let parcels = [];
+    let place;
+    for (i = 0; i < parcelCount; i++) {
+      let address = randomPick(Object.keys(roadGraph));
+      do {
+        place = randomPick(Object.keys(roadGraph));
+      } while (place == address);
+      parcels.push({ place, address }); //shorthand key/value pair with same name
+    }
+    console.log("Parcels: ", parcels);
+    return new VillageState("Post Office", parcels);
+  }
+
 }
 
 let first = new VillageState(
@@ -57,13 +71,13 @@ let next = first.move("Alice's House");
 function runRobot(state, robot, memory) {
   for (let turn = 0; ; turn++) {
     if (state.parcels.length === 0) {
-      console.log('Done in ${turn} turns');
+      console.log(`Done in ${turn} turns`);
       break;
     }
     let action = robot(state, memory);
     state = state.move(action.direction);
     memory = action.move;
-    console.log('Moved to ${action.direction}');
+    console.log(`Moved to ${action.direction}`);
   }
 }
 
@@ -72,5 +86,21 @@ function randomPick(arr) {
 }
 
 function randomRobot(state) {
-  return { direction: roadGraph[state.place] };
+  return { direction: randomPick(roadGraph[state.place]) };
 }
+
+VillageState.random = (parcelCount = 5) => {
+  let parcels = [];
+  let place;
+  for (i = 0; i < parcelCount; i++) {
+    let address = randomPick(Object.keys(roadGraph));
+    do {
+      place = randomPick(Object.keys(roadGraph));
+    } while (place == address);
+    parcels.push({ place, address }); //shorthand key/value pair with same name
+  }
+  console.log("Parcels: ", parcels);
+  return new VillageState("Post Office", parcels);
+};
+
+runRobot(VillageState.random(), randomRobot); 
