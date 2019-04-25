@@ -1,4 +1,7 @@
 
+///////////////////////////////////////////////////////////////////
+// Build Roads
+
 const roads = [
   "Alice's House-Bob's House", "Alice's House-Cabin",
   "Alice's House-Post Office", "Bob's House-Town Hall",
@@ -24,6 +27,9 @@ function buildGraph(edges) {
 
 const roadGraph = buildGraph(roads);
 console.log("ROADS: ", roadGraph);
+
+///////////////////////////////////////////////////////////////////
+// Create Village State
 
 class VillageState {
   constructor(place, parcels) {
@@ -68,6 +74,9 @@ let next = first.move("Alice's House");
 // console.log(first.place);
 // // → Post Office
 
+///////////////////////////////////////////////////////////////////
+// Run Robot Function
+
 function runRobot(state, robot, memory) {
   for (let turn = 0; ; turn++) {
     if (state.parcels.length === 0) {
@@ -76,10 +85,13 @@ function runRobot(state, robot, memory) {
     }
     let action = robot(state, memory);
     state = state.move(action.direction);
-    memory = action.move;
+    memory = action.memory;
     console.log(`Moved to ${action.direction}`);
   }
 }
+
+///////////////////////////////////////////////////////////////////
+// Create Random Robot
 
 function randomPick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -103,4 +115,22 @@ VillageState.random = (parcelCount = 5) => {
   return new VillageState("Post Office", parcels);
 };
 
-runRobot(VillageState.random(), randomRobot); 
+//runRobot(VillageState.random(), randomRobot); 
+
+///////////////////////////////////////////////////////////////////
+// Create Mailroute Robot
+
+const mailRoute = [
+  "Alice's House", "Cabin", "Alice's House", "Bob's House",
+  "Town Hall", "Daria's House", "Ernie's House",
+  "Grete's House", "Shop", "Grete's House", "Farm",
+  "Marketplace", "Post Office"
+];
+
+function routeRobot(state, memory) {
+  //console.log(memory);
+  if (memory.length == 0) memory = mailRoute;
+  return { direction: memory[0], memory: memory.slice(1) };
+}
+
+runRobot(VillageState.random(), routeRobot, []);
