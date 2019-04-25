@@ -57,7 +57,6 @@ class VillageState {
     console.log("Parcels: ", parcels);
     return new VillageState("Post Office", parcels);
   }
-
 }
 
 let first = new VillageState(
@@ -100,6 +99,7 @@ function randomRobot(state) {
   return { direction: randomPick(roadGraph[state.place]) };
 }
 
+// Also added directly to class
 VillageState.random = (parcelCount = 5) => {
   let parcels = [];
   let place;
@@ -132,10 +132,10 @@ function routeRobot(state, memory) {
   return { direction: memory[0], memory: memory.slice(1) };
 }
 
-runRobot(VillageState.random(), routeRobot, []);
+//runRobot(VillageState.random(), routeRobot, []);
 
 ///////////////////////////////////////////////////////////////////
-// Find Route function
+// Goal-oriented Robot
 
 function findRoute(graph, from, to) {
   let work = [{ at: from, route: [] }];
@@ -150,4 +150,17 @@ function findRoute(graph, from, to) {
   }
 }
 
+function goalOrientedRobot({ place, parcels }, route) {
+  if (route.length === 0) {
+    let parcel = parcels[0];
+    if (parcel.place == place) {
+      route = findRoute(roadGraph, place, parcel.address);
+    }
+    else {
+      route = findRoute(roadGraph, place, parcel.place);
+    }
+  }
+  return { direction: route[0], memory: route.slice(1) };
+}
 
+runRobot(VillageState.random(), goalOrientedRobot, []);
