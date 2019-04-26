@@ -163,4 +163,39 @@ function goalOrientedRobot({ place, parcels }, route) {
   return { direction: route[0], memory: route.slice(1) };
 }
 
-runRobot(VillageState.random(), goalOrientedRobot, []);
+//runRobot(VillageState.random(), goalOrientedRobot, []);
+
+///////////////////////////////////////////////////////////////////
+// Compare Robots
+
+// Write a function compareRobots that takes two robots (and their starting memory). It should generate 100 tasks and let each of the robots solve each of these tasks. When done, it should output the average number of steps each robot took per task.
+
+// For the sake of fairness, make sure you give each task to both robots, rather than generating different tasks per robot.
+
+function runCRobot(state, robot, memory) {
+  for (let turn = 0; ; turn++) {
+    if (state.parcels.length === 0) {
+      return turn;
+      break;
+    }
+    let action = robot(state, memory);
+    state = state.move(action.direction);
+    memory = action.memory;
+    console.log(`Moved to ${action.direction}`);
+  }
+}
+
+function compareRobots(robot1, memory1, robot2, memory2) {
+  let r1Steps = 0;
+  let r2Steps = 0;
+  let tasks = 100;
+  for (let i = 0; i < tasks; i++) {
+    let village = VillageState.random();
+    r1Steps += runCRobot(village, robot1, memory1);
+    r2Steps += runCRobot(village, robot2, memory2);
+  }
+  console.log("Robot1 average: " + r1Steps / tasks +
+    "\nRobot2 average: " + r2Steps / tasks);
+}
+
+compareRobots(routeRobot, [], goalOrientedRobot, []);
