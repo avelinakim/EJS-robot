@@ -196,6 +196,7 @@ function compareRobots(robot1, memory1, robot2, memory2) {
   }
   console.log("Robot1 average: " + r1Steps / tasks +
     "\nRobot2 average: " + r2Steps / tasks);
+  console.log("Efficiency Change: ", r1Steps / tasks - r2Steps / tasks);
 }
 
 //compareRobots(routeRobot, [], goalOrientedRobot, []);
@@ -203,42 +204,82 @@ function compareRobots(robot1, memory1, robot2, memory2) {
 ///////////////////////////////////////////////////////////////////
 // Efficient Goal-oriented Robot
 
-// function findRoute(graph, from, to) {
-//   let work = [{ at: from, route: [] }];
-//   for (let i = 0; i < work.length; i++) {
-//     let { at, route } = work[i];
-//     for (let place of graph[at]) {
-//       if (place == to) return route.concat(place);
-//       if (!work.some(w => w.at == place)) {
-//         work.push({ at: place, route: route.concat(place) });
-//       }
+// function efficientGoalRobot({ place, parcels }, route) {
+//   if (route.length === 0) {
+//     // find next parcel more efficiently
+//     let parcelSteps = parcels.map(p => findRoute(roadGraph, place, p.place).length);
+//     let indexNP = parcelSteps.indexOf(parcelSteps.reduce((accum, curr) => Math.min(accum, curr)));
+//     let nextParcel = parcels[indexNP];
+
+//     if (nextParcel.place == place) {
+//       route = findRoute(roadGraph, place, nextParcel.address);
+//     }
+//     else {
+//       route = findRoute(roadGraph, place, nextParcel.place);
 //     }
 //   }
+//   return { direction: route[0], memory: route.slice(1) };
 // }
 
-function efficientGoalRobot({ place, parcels }, route) {
-  if (route.length === 0) {
-    // find next parcel more efficiently
-    let parcelSteps = parcels.map(p => findRoute(roadGraph, place, p.place).length);
-    let indexNP = parcelSteps.indexOf(parcelSteps.reduce((accum, curr) => Math.min(accum, curr)));
-    let nextParcel = parcels[indexNP];
-
-    // let roads = roadGraph[place];
-    // for (let parcel of parcels) {
-    //   if (roads.includes(parcel.place)) {
-    //     nextParcel = parcel;
-    //     break;
-    //   }
-    // }
-    if (nextParcel.place == place) {
-      route = findRoute(roadGraph, place, nextParcel.address);
-    }
-    else {
-      route = findRoute(roadGraph, place, nextParcel.place);
+function findRoute(graph, from, to) {
+  let work = [{ at: from, route: [] }];
+  for (let i = 0; i < work.length; i++) {
+    let { at, route } = work[i];
+    for (let place of graph[at]) {
+      if (place == to) return route.concat(place);
+      if (!work.some(w => w.at == place)) {
+        work.push({ at: place, route: route.concat(place) });
+      }
     }
   }
+}
+
+function efficientGoalRobot({ place, parcels }, route) {
+  //if (route.length === 0) {
+  // set next target parcel 
+
+  let nextParcel;
+
+  // let parcelSteps = parcels.map(p => findRoute(roadGraph, place, p.place).length);
+  // let indexNP = parcelSteps.indexOf(parcelSteps.reduce((accum, curr) => Math.min(accum, curr)));
+  // let nextParcel = parcels[indexNP];
+
+  for (let p of parcels) {
+    let steps;
+    let routeType;
+    if (p.place === place) {
+      console.log("Address is " + findRoute(roadGraph, place, p.address).length + " steps away");
+      steps = findRoute(roadGraph, place, p.address).length;
+      routeType = "deliver";
+    }
+    else {
+      console.log("Pick up is " + findRoute(roadGraph, place, p.place).length + " steps away");
+      steps = findRoute(roadGraph, place, p.place).length;
+      routeType = "pickUp";
+    }
+    if (!nextParcel || steps < nextParcel.steps) nextParcel = { parcel: p, steps };
+    else if (steps === nextParcel.steps) {
+      if (routeType == "pickUp") nextParcel = { parcel: p, steps };
+    }
+  }
+  console.log("Target Parcel:", nextParcel);
+  nextParcel = nextParcel.parcel;
+
+  // pick up parcel
+  if (nextParcel.place !== place) {
+    route = findRoute(roadGraph, place, nextParcel.place);
+  }
+  // deliver parcel
+  else {
+    route = findRoute(roadGraph, place, nextParcel.address);
+  }
+
+  //}
+  console.log("Route: " + route);
   return { direction: route[0], memory: route.slice(1) };
 }
+
+
 
 //runRobot(VillageState.random(), efficientGoalRobot, []);
 
