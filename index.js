@@ -168,15 +168,10 @@ function goalOrientedRobot({ place, parcels }, route) {
 ///////////////////////////////////////////////////////////////////
 // Compare Robots
 
-// Write a function compareRobots that takes two robots (and their starting memory). It should generate 100 tasks and let each of the robots solve each of these tasks. When done, it should output the average number of steps each robot took per task.
-
-// For the sake of fairness, make sure you give each task to both robots, rather than generating different tasks per robot.
-
 function runCRobot(state, robot, memory) {
   for (let turn = 0; ; turn++) {
     if (state.parcels.length === 0) {
       return turn;
-      break;
     }
     let action = robot(state, memory);
     state = state.move(action.direction);
@@ -188,7 +183,7 @@ function runCRobot(state, robot, memory) {
 function compareRobots(robot1, memory1, robot2, memory2) {
   let r1Steps = 0;
   let r2Steps = 0;
-  let tasks = 100;
+  let tasks = 1000;
   for (let i = 0; i < tasks; i++) {
     let village = VillageState.random();
     r1Steps += runCRobot(village, robot1, memory1);
@@ -237,5 +232,36 @@ function efficientGoalRobot({ place, parcels }, route) {
   return { direction: route[0], memory: route.slice(1) };
 }
 
+// efficient robot from book
+function lazyRobot({ place, parcels }, route) {
+  if (route.length == 0) {
+    // Describe a route for every parcel
+    let routes = parcels.map(parcel => {
+      if (parcel.place != place) {
+        return {
+          route: findRoute(roadGraph, place, parcel.place),
+          pickUp: true
+        };
+      } else {
+        return {
+          route: findRoute(roadGraph, place, parcel.address),
+          pickUp: false
+        };
+      }
+    });
+
+    // This determines the precedence a route gets when choosing.
+    // Route length counts negatively, routes that pick up a package
+    // get a small bonus.
+    function score({ route, pickUp }) {
+      return (pickUp ? 0.5 : 0) - route.length;
+    }
+    route = routes.reduce((a, b) => score(a) > score(b) ? a : b).route;
+  }
+
+  return { direction: route[0], memory: route.slice(1) };
+}
+
+
 //runRobot(VillageState.random(), efficientGoalRobot, []);
-compareRobots(goalOrientedRobot, [], efficientGoalRobot, []);
+compareRobots(lazyRobot, [], efficientGoalRobot, []);
